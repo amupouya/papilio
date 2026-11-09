@@ -1,9 +1,10 @@
 """Opt-in translation of native unique violations at an async call boundary."""
 
 import inspect
-from collections.abc import Awaitable, Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, overload
+from types import CoroutineType
+from typing import Any, cast, overload
 
 from sqlalchemy.exc import IntegrityError
 
@@ -20,7 +21,7 @@ def handle_conflicts[**P, R](
     entity: str | type | None = None,
     message: str | None = None,
     message_code: str | None = None,
-) -> Callable[P, Coroutine[Any, Any, R]]: ...
+) -> Callable[P, CoroutineType[Any, Any, R]]: ...
 
 
 @overload
@@ -31,7 +32,7 @@ def handle_conflicts[**P, R](
     message: str | None = None,
     message_code: str | None = None,
 ) -> Callable[
-    [Callable[P, Awaitable[R]]], Callable[P, Coroutine[Any, Any, R]]
+    [Callable[P, Awaitable[R]]], Callable[P, CoroutineType[Any, Any, R]]
 ]: ...
 
 
@@ -42,9 +43,9 @@ def handle_conflicts[**P, R](
     message: str | None = None,
     message_code: str | None = None,
 ) -> (
-    Callable[P, Coroutine[Any, Any, R]]
+    Callable[P, CoroutineType[Any, Any, R]]
     | Callable[
-        [Callable[P, Awaitable[R]]], Callable[P, Coroutine[Any, Any, R]]
+        [Callable[P, Awaitable[R]]], Callable[P, CoroutineType[Any, Any, R]]
     ]
 ):
     """Translate unique/primary-key violations using the current open UoW.
@@ -62,7 +63,7 @@ def handle_conflicts[**P, R](
 
     def decorate(
         operation: Callable[P, Awaitable[R]],
-    ) -> Callable[P, Coroutine[Any, Any, R]]:
+    ) -> Callable[P, CoroutineType[Any, Any, R]]:
         if not inspect.iscoroutinefunction(operation):
             raise TypeError("@handle_conflicts requires an async function")
         first = next(
@@ -128,6 +129,6 @@ def handle_conflicts[**P, R](
                     unique_dict=values,
                 ) from error
 
-        return wrapped
+        return cast(Callable[P, CoroutineType[Any, Any, R]], wrapped)
 
     return decorate if function is None else decorate(function)

@@ -2,7 +2,8 @@
 
 import asyncio
 import inspect
-from types import SimpleNamespace
+from types import CoroutineType, SimpleNamespace
+from typing import get_args, get_origin, get_overloads, get_type_hints
 from unittest.mock import AsyncMock
 
 import pytest
@@ -16,6 +17,18 @@ from papilio.infra.db.tools.conflicts import handle_conflicts
 from papilio.infra.db.tools.decorators import transactional
 from papilio.infra.db.uow import SQLiteUnitOfWork, UnitOfWork
 from papilio.tools.checks import Checks
+
+
+@pytest.mark.parametrize("overload_index", [0, 1])
+def test_conflict_decorator_preserves_async_protocol_return_type(
+    overload_index,
+):
+    annotation = get_type_hints(
+        get_overloads(handle_conflicts)[overload_index]
+    )["return"]
+    if overload_index == 1:
+        annotation = get_args(annotation)[1]
+    assert get_origin(get_args(annotation)[1]) is CoroutineType
 
 
 def unit(backend="postgresql"):
