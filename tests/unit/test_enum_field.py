@@ -1,14 +1,15 @@
-from enum import StrEnum
+from enum import Enum, IntEnum, StrEnum
 
 import pytest
 from sqlalchemy import create_engine, insert, text
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import CreateEnumType
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.types import Enum as SAEnum
 from sqlmodel import Session, select
 
 from papilio.infra.db.schema.entity import IdentifiedEntity
-from papilio.infra.db.schema.fields import EnumField
+from papilio.infra.db.schema.fields import EnumField, NativeEnumField
 from papilio.infra.db.table import BaseTable
 
 
@@ -22,15 +23,11 @@ class TextEnumRow(IdentifiedEntity, BaseTable, table=True):
 
     kind: Kind = EnumField(
         Kind,
-        native_enum=False,
-        values_callable=lambda members: [member.value for member in members],
         length=35,
         default=Kind.EARNING,
     )
     optional_kind: Kind | None = EnumField(
         Kind,
-        native_enum=False,
-        values_callable=lambda members: [member.value for member in members],
         nullable=True,
         default=None,
     )
@@ -38,7 +35,20 @@ class TextEnumRow(IdentifiedEntity, BaseTable, table=True):
 
 class NativeEnumRow(IdentifiedEntity, BaseTable, table=True):
     table_name = "enum_native_probe"
-    kind: Kind = EnumField(Kind)
+    kind: Kind = NativeEnumField(Kind)
+
+
+class NamedNativeEnumRow(IdentifiedEntity, BaseTable, table=True):
+    table_name = "enum_named_native_probe"
+    kind: Kind = NativeEnumField(
+        Kind,
+        name="item_kind",
+        schema="inventory",
+        default=Kind.EARNING,
+        server_default=Kind.EARNING.value,
+        db_column="item_type",
+        index=True,
+    )
 
 
 @pytest.fixture
@@ -128,27 +138,89 @@ def test_unknown_stored_value_is_rejected_without_rewriting_it(engine):
         )
 
 
-def test_default_mapping_preserves_native_enum_and_member_names():
+def test_native_mapping_stores_values_and_restores_members():
     column_type = NativeEnumRow.__table__.c.kind.type
     assert isinstance(column_type, SAEnum)
     assert column_type.native_enum is True
-    assert column_type.enums == ["EARNING", "DEDUCTION"]
+    assert column_type.enums == ["earning", "deduction"]
     bind = column_type.bind_processor(postgresql.dialect())
     read = column_type.result_processor(postgresql.dialect(), None)
     assert bind is not None
     assert read is not None
-    assert bind(Kind.EARNING) == "EARNING"
-    assert read("EARNING") is Kind.EARNING
+    assert bind(Kind.EARNING) == "earning"
+    assert read("earning") is Kind.EARNING
+    ddl = str(
+        CreateEnumType(column_type).compile(dialect=postgresql.dialect())
+    )
+    assert ddl == "CREATE TYPE kind AS ENUM ('earning', 'deduction')"
+
+
+def test_native_type_name_schema_and_column_options_are_independent():
+    column = NamedNativeEnumRow.__table__.c.item_type
+    ddl = str(
+        CreateEnumType(column.type).compile(dialect=postgresql.dialect())
+    )
+    assert ddl == (
+        "CREATE TYPE inventory.item_kind AS ENUM ('earning', 'deduction')"
+    )
+    table_ddl = str(
+        CreateTable(NamedNativeEnumRow.__table__).compile(
+            dialect=postgresql.dialect()
+        )
+    )
+    assert (
+        "item_type inventory.item_kind DEFAULT 'earning' NOT NULL" in table_ddl
+    )
+    assert column.index is True
+
+
+def test_native_mapping_falls_back_to_text_on_sqlite():
+    engine = create_engine("sqlite://")
+    try:
+        NativeEnumRow.__table__.create(engine)
+        with Session(engine) as session:
+            row = NativeEnumRow(kind=Kind.DEDUCTION)
+            session.add(row)
+            session.commit()
+            session.expire_all()
+            assert (
+                session.exec(select(NativeEnumRow)).one().kind
+                is Kind.DEDUCTION
+            )
+        with engine.connect() as connection:
+            stored = connection.execute(
+                text("SELECT kind FROM enum_native_probe")
+            ).scalar_one()
+            assert stored == "deduction"
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("field", [EnumField, NativeEnumField])
+def test_string_enum_aliases_round_trip_with_one_stored_label(field):
+    class Aliased(str, Enum):
+        FIRST = "first"
+        ALSO_FIRST = "first"
+        SECOND = "second"
+
+    enum_type = field(Aliased).sa_type
+    bind = enum_type.bind_processor(postgresql.dialect())
+    read = enum_type.result_processor(postgresql.dialect(), None)
+    assert enum_type.enums == ["first", "second"]
+    assert bind(Aliased.ALSO_FIRST) == "first"
+    assert read("first") is Aliased.FIRST
+
+
+@pytest.mark.parametrize("field", [EnumField, NativeEnumField])
+def test_non_string_values_are_rejected_when_declaring_a_field(field):
+    class Number(IntEnum):
+        ONE = 1
+
+    with pytest.raises(TypeError, match="string"):
+        field(Number)
 
 
 @pytest.mark.parametrize("length", [0, 3, 8])
 def test_length_shorter_than_stored_values_is_rejected(length):
     with pytest.raises(ValueError, match="length"):
-        EnumField(
-            Kind,
-            native_enum=False,
-            values_callable=lambda members: [
-                member.value for member in members
-            ],
-            length=length,
-        )
+        EnumField(Kind, length=length)

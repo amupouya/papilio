@@ -173,21 +173,54 @@ def JSONField(
     )
 
 
+def _enum_values(enum_cls: type[enum.Enum]) -> list[str]:
+    values: list[str] = []
+    for member in enum_cls:
+        value = member.value
+        if not isinstance(value, str):
+            raise TypeError("Enum fields require string member values")
+        values.append(value)
+    return values
+
+
 def EnumField(
     enum_cls: type[enum.Enum],
     *,
-    native_enum: bool = True,
-    values_callable: Callable[[type[enum.Enum]], list[str]] | None = None,
     length: int | None = None,
     **options: Unpack[FieldOptions],
 ) -> Any:
-    """Map members to native enums or text with SQLAlchemy defaults."""
+    """Store string member values in VARCHAR and load enum members."""
     enum_options = {"length": length} if length is not None else {}
     return _field(
         SAEnum(
             enum_cls,
-            native_enum=native_enum,
-            values_callable=values_callable,
+            native_enum=False,
+            values_callable=_enum_values,
+            **enum_options,
+        ),
+        **options,
+    )
+
+
+def NativeEnumField(
+    enum_cls: type[enum.Enum],
+    *,
+    name: str | None = None,
+    schema: str | None = None,
+    **options: Unpack[FieldOptions],
+) -> Any:
+    """Store string member values using the backend's native enum support.
+
+    SQLAlchemy infers the type name from the enum class when omitted and
+    falls back to VARCHAR on backends without native enums.
+    """
+    enum_options = {"name": name} if name is not None else {}
+    return _field(
+        SAEnum(
+            enum_cls,
+            native_enum=True,
+            values_callable=_enum_values,
+            schema=schema,
             **enum_options,
         ),
         **options,

@@ -45,13 +45,21 @@ You can set the table name explicitly; otherwise BaseTable applies its naming co
 | Bounded / unbounded text | `CharField` / `TextField` |
 | Date / time of day / timestamp | `DateField` / `TimeField` / `TimestampField` |
 | JSON document | `JSONField` |
-| Enum | `EnumField` |
+| Enum in text / native database enum | `EnumField` / `NativeEnumField` |
 | Relationship key | `ForeignKeyField` |
 | Computed column | `ComputedField` |
 
 Pass options such as `nullable`, `unique`, `index`, `default`, `default_factory`, and `server_default` directly. `db_column` sets a different SQL column name. See the [field reference](../reference/models.md) for exact helper signatures and the lower-level escape hatch `sa_column_kwargs`.
 
 Use `default_factory=list` or `dict` for independent mutable defaults. A Python default and SQL `server_default` have different jobs. `to_row()` includes explicitly supplied values by default; SQL/column defaults can supply omitted values.
+
+Enum helpers store string member values and restore Python members when read.
+For example, `Status.PENDING = "pending"` stores `"pending"`. Use
+`EnumField(Status)` for a `VARCHAR` column and `NativeEnumField(Status)` to
+select the database's native enum support. Length is inferred for text columns;
+pass `length` to `EnumField` when the schema needs a wider column. Neither form
+needs a callback. Existing databases using 1.x member-name storage require an
+explicit [migration](../releases/2.0.0.md).
 
 ## Backend-specific fields
 

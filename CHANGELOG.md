@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.0.0
+
+- Add bare `@request_scoped` methods using the APP container supplied through
+  their constructor, and `service: Service = Inject()` for typed direct calls
+  with ordinary arguments and defaults. Retain explicit container getters and
+  native `FromDishka` annotations through the same scope/injection adapter.
+- Shield transaction rollback during AnyIO cancellation so cleanup completes
+  before cancellation propagates and checked-out connections are released.
+- Replace enum configuration callbacks and flags with `EnumField` for VARCHAR
+  and `NativeEnumField` for native database enums. Both store string member
+  values and restore Python enum members using SQLAlchemy's enum mapping.
+- Support native enum type names/schemas and ordinary field defaults, nulls
+  and column options. Reject non-string enum values at declaration time.
+- Breaking: 1.x `EnumField` used native/member-name storage by default.
+  Existing schemas/data require an explicit migration; see
+  [migration notes](docs/releases/2.0.0.md). No automatic data migration occurs.
+
 ## 1.7.0
 
 - Add `request_scoped` for async function execution with native Dishka scoped

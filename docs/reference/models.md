@@ -143,22 +143,17 @@ def JSONField(*, none_as_null: bool=False, **options: Unpack[FieldOptions]) -> A
 def EnumField(
     enum_cls: type[enum.Enum],
     *,
-    native_enum: bool = True,
-    values_callable: Callable[[type[enum.Enum]], list[str]] | None = None,
     length: int | None = None,
     **options: Unpack[FieldOptions],
 ) -> Any:
     ...
 ```
 
-Defaults preserve SQLAlchemy's native enum and member-name storage. To keep an
-existing text column and store member values while reading Python enum members:
+Store string member values in a text column and read Python enum members:
 
 ```python
 kind: ItemKind = EnumField(
     ItemKind,
-    native_enum=False,
-    values_callable=lambda members: [member.value for member in members],
     length=35,
 )
 ```
@@ -167,6 +162,39 @@ This maps to `VARCHAR(35)` without creating a PostgreSQL enum or an enum check
 constraint. With `length=None`, SQLAlchemy infers the length from stored strings.
 Existing text values must match the selected enum values; unknown values raise
 `LookupError` when read. The helper does not migrate existing columns or data.
+`StrEnum`, Papilio's `FaStrEnum`, and ordinary enums with string values are
+supported. Non-string values raise `TypeError` when the field is declared.
+
+### `NativeEnumField`
+
+```python
+def NativeEnumField(
+    enum_cls: type[enum.Enum],
+    *,
+    name: str | None = None,
+    schema: str | None = None,
+    **options: Unpack[FieldOptions],
+) -> Any:
+    ...
+```
+
+Stores the same string member values using SQLAlchemy's native enum support.
+PostgreSQL creates a named enum type; backends without native enums use the
+normal SQLAlchemy `VARCHAR` fallback. `name` and `schema` identify the database
+type, while `db_column` identifies the column. Without `name`, SQLAlchemy uses
+the lowercased Python enum class name.
+
+```python
+kind: ItemKind = NativeEnumField(
+    ItemKind, name="item_kind", schema="inventory"
+)
+```
+
+Both helpers accept the ordinary model and column options, including
+`default`, `nullable`, and `server_default`. Neither helper takes
+`native_enum` or `values_callable`. Version 1.x stored member names by default;
+see the [2.0 migration notes](../releases/2.0.0.md) before adopting these helpers
+for an existing database.
 
 ### `ComputedField`
 

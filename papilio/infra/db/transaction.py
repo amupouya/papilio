@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 
+from anyio import CancelScope
 from sqlalchemy.ext.asyncio import AsyncSessionTransaction
 
 from papilio.infra.db.uow import UnitOfWork
@@ -115,7 +116,8 @@ async def transaction(
                         )
                     await unit.commit()
                 except BaseException:
-                    await unit.rollback()
+                    with CancelScope(shield=True):
+                        await unit.rollback()
                     raise
             finally:
                 scope.active = False

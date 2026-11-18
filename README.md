@@ -523,7 +523,12 @@ Bases: `BaseEntity` (bare), `IdentifiedEntity`, `TimestampEntity`,
 Field factories: `IDField`, `SmallIntField`, `IntField`, `BigIntField`, `BoolField`,
 `FloatField`, `NumericField`, `CharField`, `TextField`, `DateField`,
 `TimestampField` (timezone-aware), `JSONBField`, `ArrayField` (optional GIN index),
-`EnumField` (native PG enum), `ComputedField` (generated column), `ForeignKeyField`.
+`EnumField` (VARCHAR), `NativeEnumField` (native database enum),
+`ComputedField` (generated column), `ForeignKeyField`.
+
+Both enum helpers store string member values and restore Python enum members.
+Version 2.0 changes the previous default native/member-name mapping; read the
+[migration notes](docs/releases/2.0.0.md) before upgrading an existing database.
 
 ### 1b. The table — `infra/tables.py`
 
@@ -824,12 +829,14 @@ backend-specific UoW when it is first resolved and closes it at scope exit. Scop
 never commits. SQLAlchemy discards any outstanding transaction when the session
 closes. Repositories execute SQL through `uow.execute()`; they do not own the transaction.
 
-Outside integrations that already own a request, use
-`papilio.infra.scopes.request_scoped(container_getter=...)` to bind an async
-entrypoint to native scoped dependency injection. It reuses an existing request
-or owns a short request scope and closes its resources, without committing.
-Services keep constructor injection. See [request-scoped functions](docs/guide/request-scopes.md)
-for composition, nested/concurrent ownership and typed direct calls.
+For a short method-owned scope, use `@request_scoped` from
+`papilio.infra.scopes` on an execution adapter holding the APP `AsyncContainer`
+in `self.container`. Declare keyword-only dependencies as
+`service: Service = Inject()`. Ordinary arguments and return types remain typed;
+Dishka creates and closes the method's scoped dependencies, without committing.
+Services keep constructor injection. Explicit `container_getter` bindings also
+remain available. See [request-scoped functions](docs/guide/request-scopes.md)
+for examples, nested/concurrent ownership and typed direct calls.
 
 Use `@transactional` on a writing application method. It requires an open UoW,
 commits before returning, and rolls back on an exception or cancellation before
