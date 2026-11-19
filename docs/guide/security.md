@@ -75,8 +75,8 @@ for a missing scope; applications can supply a different authorization policy.
 ## Public identifiers
 
 Stored numeric public identities are an optional
-[PostgreSQL capability](public-ids.md), generated in the database through
-permuteseq. PublicIDOutput exposes the stored value using Pydantic aliasing.
+[PostgreSQL field capability](permuted-fields.md), generated directly in the
+chosen column through permuteseq. Ordinary outputs expose the stored integer.
 There is no runtime ID decoding or encryption configuration. Public IDs do not
 replace authorization, and the permutation is not cryptographic protection.
 

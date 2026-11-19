@@ -233,14 +233,17 @@ def report(tmp_path):
         ),
     ]
     required += [
-        ("integration.test_pg_public_ids", name)
+        ("integration.test_permuted_fields", name)
         for name in (
             "test_single_and_bulk_generation_return_stored_values",
             "test_concurrent_committed_inserts_never_repeat",
-            "test_public_operations_preserve_internal_operations",
-            "test_loaded_rows_and_bulk_updates_leave_generation_to_db",
-            "test_http_foreign_reference_and_errors_use_stored_public_ids",
-            "test_generated_id_is_immutable_and_capacity_fails_without_reuse",
+            "test_existing_single_and_set_repository_operations",
+            "test_loaded_upsert_and_batch_update_preserve_the_id",
+            "test_plain_http_output_and_foreign_references_use_the_same_id",
+            "test_capacity_exhaustion_and_rollback_never_reuse_positions",
+            "test_non_primary_fields_generate_independently_on_base_entity",
+            "test_native_alembic_upgrade_downgrade_and_sequence_ownership",
+            "test_quoted_schema_metadata_copy_and_external_drop",
         )
     ]
     required += [

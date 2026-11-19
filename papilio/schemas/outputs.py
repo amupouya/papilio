@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from typing import Any, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from papilio.types.enums import FaStrEnum
 
@@ -26,12 +26,6 @@ class BaseOutput(BaseModel):
     @classmethod
     def from_dicts(cls, data: Sequence[Any]) -> list[Self]:
         return [cls.model_validate(item) for item in data]
-
-
-class PublicIDOutput(BaseOutput):
-    """Expose stored public_id as id through native Pydantic aliasing."""
-
-    id: int = Field(validation_alias="public_id")
 
 
 class EnumOut(BaseOutput):

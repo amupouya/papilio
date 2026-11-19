@@ -34,8 +34,6 @@ from papilio.infra.db.repositories.base import (
 from papilio.infra.db.repositories.contracts.postgresql import (
     PGIdentifiedRepositoryContract,
     PGPersistenceRepositoryContract,
-    PGPublicIdentifiedRepositoryContract,
-    PGPublicPersistenceRepositoryContract,
     PGReaderContract,
     PGRepositoryContract,
     PGTimestampRepositoryContract,
@@ -45,10 +43,6 @@ from papilio.infra.db.schema.entity import (
     IdentifiedEntity,
     PersistenceEntity,
     TimestampEntity,
-)
-from papilio.infra.db.schema.postgresql import (
-    PGPublicIdentifiedEntity,
-    PGPublicPersistenceEntity,
 )
 from papilio.infra.db.tools.read import (
     fetch_page,
@@ -362,116 +356,3 @@ class PGPersistenceRepository[T: PersistenceEntity](
     PGPersistenceRepositoryContract[T],
 ):
     pass
-
-
-class PGPublicIdentifiedRepository[T: PGPublicIdentifiedEntity](
-    PGIdentifiedRepository[T], PGPublicIdentifiedRepositoryContract[T]
-):
-    """PostgreSQL public-ID operations alongside internal-ID methods."""
-
-    async def get_by_public_id(self, public_id: int) -> T | None:
-        """Read one row by its public identity.
-
-        Args:
-            public_id: Stored public identity.
-
-        Returns:
-            The matching row, or None.
-        """
-        row = await self.get_one(col(self.table.public_id) == public_id)
-        return row
-
-    async def get_by_public_ids(
-        self, public_ids: Sequence[int]
-    ) -> Sequence[T]:
-        """Read a set of rows without one query per public identity.
-
-        Args:
-            public_ids: Public identities to retrieve.
-
-        Returns:
-            Matching rows; missing IDs are omitted and order is unspecified.
-        """
-        rows = await self.get_all(col(self.table.public_id).in_(public_ids))
-        return rows
-
-    async def update_by_public_id(
-        self, public_id: int, changes: Mapping[str, Any]
-    ) -> T | None:
-        """Update one row directly by its public identity.
-
-        Args:
-            public_id: Stored public identity.
-            changes: Explicit mutable column values.
-
-        Returns:
-            The updated row, or None when missing.
-        """
-        stmt = (
-            update(self.table)
-            .where(col(self.table.public_id) == public_id)
-            .values(**changes)
-            .returning(self.table)
-            .execution_options(
-                populate_existing=True, synchronize_session=False
-            )
-        )
-        result = await self.uow.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def update_by_public_ids(
-        self, public_ids: Sequence[int], changes: Mapping[str, Any]
-    ) -> Sequence[T]:
-        """Update a set of rows in one statement.
-
-        Args:
-            public_ids: Stored public identities to update.
-            changes: Explicit mutable column values.
-
-        Returns:
-            Updated rows; missing IDs are omitted and order is unspecified.
-        """
-        rows = await self.update(
-            col(self.table.public_id).in_(public_ids), changes
-        )
-        return rows
-
-    async def remove_by_public_id(self, public_id: int) -> T | None:
-        """Delete one row directly by its public identity.
-
-        Args:
-            public_id: Stored public identity.
-
-        Returns:
-            The deleted row, or None when missing.
-        """
-        stmt = (
-            delete(self.table)
-            .where(col(self.table.public_id) == public_id)
-            .returning(self.table)
-            .execution_options(synchronize_session="fetch")
-        )
-        result = await self.uow.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def remove_by_public_ids(
-        self, public_ids: Sequence[int]
-    ) -> Sequence[T]:
-        """Delete a set of rows in one statement.
-
-        Args:
-            public_ids: Stored public identities to delete.
-
-        Returns:
-            Deleted rows; missing IDs are omitted and order is unspecified.
-        """
-        rows = await self.remove(col(self.table.public_id).in_(public_ids))
-        return rows
-
-
-class PGPublicPersistenceRepository[T: PGPublicPersistenceEntity](
-    PGPublicIdentifiedRepository[T],
-    PGPersistenceRepository[T],
-    PGPublicPersistenceRepositoryContract[T],
-):
-    """Public-ID and timestamp operations for PostgreSQL entities."""

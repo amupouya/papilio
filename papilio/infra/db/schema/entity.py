@@ -74,6 +74,13 @@ class BaseEntity(SQLModel):
 class IdentifiedEntity(BaseEntity):
     id: int = IDField()
 
+    def to_row(self, *, exclude_unset: bool = True) -> dict[str, Any]:
+        """Return supplied values, retaining an identity assigned by the DB."""
+        values = super().to_row(exclude_unset=exclude_unset)
+        if self.id is not None:
+            values["id"] = self.id
+        return values
+
     def to_changes(self) -> dict[str, Any]:
         """Serialize supplied update fields, excluding the primary key."""
         return self.model_dump(exclude={"id"}, exclude_unset=True)

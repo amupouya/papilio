@@ -35,9 +35,9 @@ These helpers use authenticated encryption and raise `ValueError` for an invalid
 
 ## Public identifiers
 
-See [PostgreSQL public IDs](public-ids.md) for database-generated numeric public
-identities and the database-independent PublicIDOutput schema. Input values are
-ordinary positive integers; queries use the stored public_id directly.
+See [PostgreSQL permuted fields](permuted-fields.md) for nonsequential stored
+integers. Ordinary outputs, repositories and foreign keys use that same value;
+there is no public-ID conversion or separate output base.
 
 ## Common result and enum types
 

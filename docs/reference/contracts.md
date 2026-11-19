@@ -1,9 +1,7 @@
 # Repository contracts
 
-PostgreSQL also exposes PGPublicIdentifiedRepositoryContract and
-PGPublicPersistenceRepositoryContract for its optional stored public-ID models.
-They retain internal-ID/timestamp obligations and add the six public-ID methods
-shown in the [PostgreSQL reference](postgresql.md#stored-public-ids-postgresql-only).
+[Permuted PostgreSQL fields](../guide/permuted-fields.md) use the same ordinary
+repository contracts below; generation does not add repository obligations.
 
 Generated from this checkout. Code blocks show signatures; `...` replaces implementation bodies. These are reference declarations, not standalone executable modules.
 

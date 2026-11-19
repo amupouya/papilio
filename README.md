@@ -1582,20 +1582,17 @@ confuse and must not be, so they sit in two files rather than one:
 A malformed stored hash is a non-match, never an exception — a legacy row cannot take
 a login endpoint down.
 
-### Stored public IDs (PostgreSQL only)
+### Permuted BIGINT fields (PostgreSQL only)
 
-PostgreSQL can generate and store numeric public IDs through the optional
-`permuteseq` extension. Use `PGPublicIdentifiedEntity` / `PGPublicIDField` from
-`papilio.infra.db.schema.postgresql` and `PGPublicIdentifiedRepository` from
-`papilio.infra.db.repositories.backends.postgresql`. The existing primary key
-feeds a stored generated column; there is no Python read-time conversion or
-collision-retry insertion loop. A range/decimal width is declared on the model,
-without runtime encryption configuration. `PublicIDOutput` exposes stored
-`public_id` as `id` through Pydantic aliasing, independently of the database.
+`PermutedBigIntField` from `papilio.infra.db.schema.postgresql` generates a
+nonsequential number directly in any declared BIGINT column through the optional
+`permuteseq` extension. Choose `primary_key=True` or `unique=True` explicitly.
+Override `id` on the ordinary identified/persistence model to retain the existing
+ready PostgreSQL repositories, foreign keys and plain output schemas. No second
+public_id column, runtime ID codec or configuration file is needed.
 
-See [setup, ranges, foreign references and errors](docs/guide/public-ids.md).
-Existing public IDs require an explicit [3.0 migration](docs/releases/3.0.0.md);
-other database backends retain their ordinary ID behavior.
+See [usage, ranges and migrations](docs/guide/permuted-fields.md) and the breaking
+[4.0 migration notes](docs/releases/4.0.0.md).
 
 ### Other utilities
 

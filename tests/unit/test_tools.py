@@ -168,12 +168,14 @@ sys.meta_path.insert(0, Missing())
 from papilio.api.application import create_app
 from papilio.api.dependencies.auth import bearer
 from papilio.tools.checks import Checks
-from papilio.schemas.outputs import PublicIDOutput
+from papilio.schemas.outputs import BaseOutput
 from papilio.providers.rate_limit.memory import MemoryRateProvider
 from papilio.tools.rate_limit.limiter import RateLimiter
 from papilio.tools.rate_limit.config import RateLimitRule
 from dishka import make_async_container
-output = PublicIDOutput.model_validate({'public_id': 1234})
+class Output(BaseOutput):
+    id: int
+output = Output.model_validate({'id': 1234})
 assert output.model_dump() == {'id': 1234}
 async def main():
     container = make_async_container(MemoryRateProvider())

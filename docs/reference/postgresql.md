@@ -6,45 +6,22 @@ Single-underscore methods are protected extension tools. For inherited methods, 
 
 Shared implementations: [repository base](repository-base.md). Abstract obligations: [backend contracts](contracts.md).
 
-## Stored public IDs (PostgreSQL only)
+## Permuted BIGINT fields (PostgreSQL only)
 
 Requires the separately installed permuteseq server extension. See
-[PostgreSQL public IDs](../guide/public-ids.md) for setup and migration.
+[field declarations and sequence/migration lifecycle](../guide/permuted-fields.md).
 
 ```python
 # papilio.infra.db.schema.postgresql
-def PGPublicIDField(*, digits: int | None = None,
-                    start: int | None = None, end: int | None = None) -> Any: ...
 
-class PGPublicIdentifiedEntity(IdentifiedEntity):
-    public_id: int = PGPublicIDField()
-    def to_row(self, *, exclude_unset: bool = True) -> dict[str, Any]: ...
-    def to_changes(self) -> dict[str, Any]: ...
-
-class PGPublicPersistenceEntity(PGPublicIdentifiedEntity, PersistenceEntity): ...
-
-# papilio.infra.db.repositories.backends.postgresql
-class PGPublicIdentifiedRepository[T: PGPublicIdentifiedEntity](
-    PGIdentifiedRepository[T], PGPublicIdentifiedRepositoryContract[T]
-):
-    async def get_by_public_id(self, public_id: int) -> T | None: ...
-    async def get_by_public_ids(self, public_ids: Sequence[int]) -> Sequence[T]: ...
-    async def update_by_public_id(self, public_id: int,
-                                  changes: Mapping[str, Any]) -> T | None: ...
-    async def update_by_public_ids(self, public_ids: Sequence[int],
-                                   changes: Mapping[str, Any]) -> Sequence[T]: ...
-    async def remove_by_public_id(self, public_id: int) -> T | None: ...
-    async def remove_by_public_ids(self, public_ids: Sequence[int]) -> Sequence[T]: ...
-
-class PGPublicPersistenceRepository[T: PGPublicPersistenceEntity](
-    PGPublicIdentifiedRepository[T], PGPersistenceRepository[T],
-    PGPublicPersistenceRepositoryContract[T]
-): ...
+def PermutedBigIntField(*, digits: int | None = None,
+                        start: int | None = None, end: int | None = None,
+                        **options: Unpack[FieldOptions]) -> Any: ...
 ```
 
-Matching abstract contracts are in
-papilio.infra.db.repositories.contracts.postgresql. Internal-ID operations keep
-their existing semantics. These classes do not install extensions or run DDL.
+A field helper, independent of the column name and base model. The caller selects
+primary_key/unique. Override id on the ordinary entity to use the ready
+repositories below; no special public-ID repository or output is required.
 
 ## `papilio.infra.db.repositories.backends.postgresql`
 

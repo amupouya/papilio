@@ -10,7 +10,7 @@ and connects them when selected. `papilio.api.dependencies` and
 | Rate limiting | `tools.rate_limit` | Memory/Redis providers and HTTP adapters |
 | JWT authentication | `tools.auth.JWTAuth` | `api.dependencies.auth.bearer` |
 | Input/existence checks | `tools.checks.Checks`, `IDChecks` | Application services choose inheritance/composition |
-| Stored public IDs (PostgreSQL) | `infra.db.schema.postgresql` | `schemas.outputs.PublicIDOutput` |
+| Permuted BIGINT fields (PostgreSQL) | `infra.db.schema.postgresql` | Optional server-side permuteseq extension |
 | Password hashing | `security.passwords.PasswordHasher` | `providers.passwords.PasswordProvider` |
 
 The framework does not require an identity model, JWT authentication, encoded
@@ -101,9 +101,9 @@ is an optional ready implementation, returning `Principal(subject, scopes)` and
 requiring an access token. `require_access(principal_dependency, scope)` is an
 optional scope policy. See [security](security.md) for wiring.
 
-Numeric public identities belong to the optional
-[PostgreSQL public-ID capability](public-ids.md). PublicIDOutput only renames a
-stored public value; no decoder or automatic application-wide conversion runs.
+Nonsequential integers use the optional [PostgreSQL field helper](permuted-fields.md).
+Choose the column and its constraints explicitly; ordinary outputs expose the
+stored value without decoding or automatic application-wide conversion.
 
 ## Checks, not a required service base
 

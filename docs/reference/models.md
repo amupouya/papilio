@@ -259,6 +259,7 @@ class BaseEntity(SQLModel):
 ```python
 class IdentifiedEntity(BaseEntity):
     id: int = IDField()
+    def to_row(self, *, exclude_unset: bool = True) -> dict[str, Any]: ...
     def to_changes(self) -> dict[str, Any]:
         ...
 ```

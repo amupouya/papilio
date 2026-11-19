@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.0.0
+
+- Add PostgreSQL PermutedBigIntField for any BIGINT column, with caller-selected
+  primary_key/unique, declared digits/range and database-owned nonsequential
+  defaults. Use existing entities, repositories, foreign keys and outputs.
+- Own per-column NO CYCLE sequence lifecycle through native SQLAlchemy DDL hooks;
+  document explicit Alembic sequence/default/ownership operations.
+- Preserve DB-assigned identities in IdentifiedEntity.to_row for loaded upserts.
+- Breaking: remove the separate PGPublicIDField/entity/repository/contract family
+  and PublicIDOutput. Existing identifiers/FKs require deliberate application
+  migration; see [4.0 notes](docs/releases/4.0.0.md).
+
 ## 3.0.0
 
 - Add PostgreSQL-only stored public IDs through permuteseq, using the existing
