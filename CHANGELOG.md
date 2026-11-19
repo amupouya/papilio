@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+- Add `app.tables_path` and the keyword-only `Bootstrapper.tables_path`
+  constructor option for configurable table discovery, including file and
+  package layouts such as `infra.pg.tables`.
+- Honor the setting in HTTP and standalone MCP factories and
+  `get_bootstrapper()`. Preserve `infra.tables` as the default.
+
 ## 2.0.0
 
 - Add bare `@request_scoped` methods using the APP container supplied through
