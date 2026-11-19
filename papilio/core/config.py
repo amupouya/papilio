@@ -21,6 +21,7 @@ class AppConfig(BaseModel):
     """Application-owned module roots and feature settings."""
 
     modules: list[str] = Field(default_factory=list)
+    tables_path: str = "infra.tables"
     features: set[Feature] = Field(default_factory=set)
     settings: str | None = None
 

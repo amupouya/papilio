@@ -31,7 +31,9 @@ def create_app(
 ) -> Starlette:
     """Own the dependency root and native SDK lifecycle for an MCP-only app."""
     config = settings if settings is not None else get_settings()
-    bootstrapper = Bootstrapper(config.app.modules)
+    bootstrapper = Bootstrapper(
+        config.app.modules, tables_path=config.app.tables_path
+    )
     container = make_async_container(
         CoreProvider(config), *bootstrapper.boot_providers(), *providers
     )

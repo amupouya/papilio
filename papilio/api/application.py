@@ -46,7 +46,9 @@ def create_app(
 ) -> FastAPI:
     """Build an app; extra options go directly to FastAPI."""
     config = settings if settings is not None else get_settings()
-    bootstrapper = Bootstrapper(config.app.modules)
+    bootstrapper = Bootstrapper(
+        config.app.modules, tables_path=config.app.tables_path
+    )
     discovered = bootstrapper.boot_providers()
     discovered_routers = bootstrapper.boot_routers()
     container = make_async_container(

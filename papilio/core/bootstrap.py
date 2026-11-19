@@ -29,10 +29,15 @@ class Bootstrapper:
     discovered from their layout; the framework supplies none of its own.
     """
 
-    def __init__(self, base_pkgs: Sequence[str] = ()) -> None:
+    def __init__(
+        self,
+        base_pkgs: Sequence[str] = (),
+        *,
+        tables_path: str = "infra.tables",
+    ) -> None:
         self.base_pkgs = tuple(base_pkgs)
         self.providers_path = "providers"
-        self.tables_path = "infra.tables"
+        self.tables_path = tables_path
         self.routers_path = "routers"
         self.tools_path = "tools"
         self.function_tools_path = "function_tools"
@@ -172,7 +177,7 @@ class Bootstrapper:
         return collections
 
     def boot_sqlmodels(self) -> None:
-        """Import each module's ``infra.tables`` file or package.
+        """Import each module's configured table file or package.
 
         Only the selected table files register on ``SQLModel.metadata``;
         unrelated domain and infra files are not scanned.
@@ -261,5 +266,6 @@ class Bootstrapper:
 
 @lru_cache
 def get_bootstrapper() -> Bootstrapper:
-    """The bootstrapper for this app, reading `app.modules` from config.yml."""
-    return Bootstrapper(get_settings().app.modules)
+    """Build from the configured module roots and table discovery path."""
+    config = get_settings()
+    return Bootstrapper(config.app.modules, tables_path=config.app.tables_path)

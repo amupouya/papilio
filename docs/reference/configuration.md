@@ -16,9 +16,15 @@ class Feature(StrEnum):
 ```python
 class AppConfig(BaseModel):
     modules: list[str] = Field(default_factory=list)
+    tables_path: str = 'infra.tables'
     features: set[Feature] = Field(default_factory=set)
     settings: str | None = None
 ```
+
+`tables_path` is the dotted path relative to each discovered module. Set it to
+`infra.pg.tables` to keep PostgreSQL tables under their backend; API, standalone
+MCP and `get_bootstrapper()` use the same setting. The default preserves existing
+projects.
 
 ### `FastAPIConfig`
 
