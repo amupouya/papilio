@@ -79,8 +79,8 @@ nav:
       - Security and utilities: reference/utilities.md
       - CLI and scaffolding: reference/scaffolding.md
   - Release notes:
+      - Papilio 4.0.1: releases/4.0.1.md
       - Papilio 4.0.0: releases/4.0.0.md
-      - Papilio 3.0.0: releases/3.0.0.md
       - Papilio 2.0.0: releases/2.0.0.md
       - Papilio 1.6.1: releases/1.6.1.md
       - Papilio 1.6.0: releases/1.6.0.md

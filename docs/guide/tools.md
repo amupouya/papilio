@@ -121,8 +121,6 @@ inherit from these helpers.
   move to `papilio.providers.*`.
 - `BaseService`/`BaseIDService` → `Checks`/`IDChecks` in `papilio.tools.checks`;
   explicitly declare the entity label.
-- Runtime ID codecs and path decoders were removed in 3.0; see the explicit
-  [public-ID migration](../releases/3.0.0.md).
 - The fixed `CurrentPrincipal`/`get_current_principal` dependency was replaced by
   explicit `bearer(authenticate)`. JWT decoding no longer reads global settings.
 - Rate rules/configuration live in `tools.rate_limit.config`; limiter policy and

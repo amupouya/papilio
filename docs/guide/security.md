@@ -72,13 +72,11 @@ requires a valid access token, nonempty subject and string-list scopes. A refres
 token is rejected. The optional scope guard retains the existing 401 response
 for a missing scope; applications can supply a different authorization policy.
 
-## Public identifiers
+## Nonsequential numeric fields
 
-Stored numeric public identities are an optional
-[PostgreSQL field capability](permuted-fields.md), generated directly in the
-chosen column through permuteseq. Ordinary outputs expose the stored integer.
-There is no runtime ID decoding or encryption configuration. Public IDs do not
-replace authorization, and the permutation is not cryptographic protection.
+Use [PermutedBigIntField](permuted-fields.md) to generate a stored integer in a
+chosen PostgreSQL column. The caller selects its primary-key/uniqueness constraints;
+ordinary repositories and output schemas use that same value.
 
 ## Configure rate limiting
 

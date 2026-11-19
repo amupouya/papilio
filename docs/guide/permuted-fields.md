@@ -131,6 +131,6 @@ existing table likewise needs explicit sequence/default/ownership DDL. Renaming
 a table/column preserves its existing sequence reference; compare the resulting
 migration rather than assuming that a declaration renames stored objects.
 
-For already issued IDs or the removed 3.0 public-ID APIs, follow the
-[4.0 migration notes](../releases/4.0.0.md). Papilio does not migrate application
-data, install server extensions or regenerate existing identifiers at startup.
+Changing an existing identifier column or its generator requires an explicit
+application migration preserving stored values and dependent foreign keys.
+Papilio does not alter existing data or install server extensions at startup.

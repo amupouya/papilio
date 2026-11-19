@@ -33,11 +33,11 @@ assert decrypt(encrypted, key) == "private payload"
 
 These helpers use authenticated encryption and raise `ValueError` for an invalid encrypted payload. Pass an application-managed secret; the example value is not a deployment key. `hash_sha256` supplies a deterministic digest and `secure_compare` supplies string comparison for secrets. Passwords have a separate [PasswordHasher](security.md) API.
 
-## Public identifiers
+## Nonsequential numeric fields
 
-See [PostgreSQL permuted fields](permuted-fields.md) for nonsequential stored
-integers. Ordinary outputs, repositories and foreign keys use that same value;
-there is no public-ID conversion or separate output base.
+Use [PermutedBigIntField](permuted-fields.md) to generate a stored integer in a
+chosen PostgreSQL column. The caller selects its primary-key/uniqueness constraints;
+ordinary repositories and output schemas use that same value.
 
 ## Common result and enum types
 

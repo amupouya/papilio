@@ -21,7 +21,7 @@ def PermutedBigIntField(*, digits: int | None = None,
 
 A field helper, independent of the column name and base model. The caller selects
 primary_key/unique. Override id on the ordinary entity to use the ready
-repositories below; no special public-ID repository or output is required.
+repositories below and ordinary output schemas.
 
 ## `papilio.infra.db.repositories.backends.postgresql`
 

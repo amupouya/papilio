@@ -1135,28 +1135,28 @@ async def test_mcp_transforms_scalar_inputs_once_through_http(native, nested):
     from papilio.function_tools.mcp import build_server
 
     container, _, _ = native
-    decoded: list[int] = []
+    normalized: list[int] = []
 
-    def decode(value: int) -> int:
-        decoded.append(value)
+    def to_seconds(value: int) -> int:
+        normalized.append(value)
         if value < 1000:
             raise ValueError("Value must be at least 1000")
-        return value - 1000
+        return value // 1000
 
-    identifier = Annotated[int, AfterValidator(decode)]
-    model = create_model("PublicReference", value=(identifier, ...))
+    duration = Annotated[int, AfterValidator(to_seconds)]
+    model = create_model("DurationInput", value=(duration, ...))
 
     async def read(value, actor: FromDishka[Actor]) -> Output:
         actual = value.value if nested else value
         return Output(value=actual, actor_id=actor.id)
 
-    read.__annotations__["value"] = model if nested else identifier
+    read.__annotations__["value"] = model if nested else duration
     tools = FunctionTools()
     tools.tool(
-        key="public-reference",
-        name="public_reference",
-        title="Read reference",
-        description="Resolve the public identifier once.",
+        key="duration",
+        name="duration",
+        title="Read duration",
+        description="Convert milliseconds to seconds once.",
         effect=ToolEffect.READ,
         authorize=authorize,
     )(read)
@@ -1165,10 +1165,10 @@ async def test_mcp_transforms_scalar_inputs_once_through_http(native, nested):
     server = build_server(
         executor,
         current_context=lambda: actor,
-        name="References",
+        name="Durations",
     )
     app = server.streamable_http_app(stateless_http=True, json_response=True)
-    public_id = 1007
+    milliseconds = 7000
     async with app.router.lifespan_context(app):
         async with httpx2.AsyncClient(
             transport=httpx2.ASGITransport(app=app)
@@ -1180,7 +1180,7 @@ async def test_mcp_transforms_scalar_inputs_once_through_http(native, nested):
             ) as client:
                 listing = await client.list_tools()
                 expected = (
-                    executor.tools[0].input_schema["$defs"]["PublicReference"]
+                    executor.tools[0].input_schema["$defs"]["DurationInput"]
                     if nested
                     else executor.tools[0].input_schema["properties"]["value"]
                 )
@@ -1192,14 +1192,18 @@ async def test_mcp_transforms_scalar_inputs_once_through_http(native, nested):
                     "value"
                 }
                 result = await client.call_tool(
-                    "public_reference",
-                    {"value": {"value": public_id} if nested else public_id},
+                    "duration",
+                    {
+                        "value": {"value": milliseconds}
+                        if nested
+                        else milliseconds
+                    },
                 )
                 assert not result.is_error
                 assert result.structured_content == {"value": 7, "actor_id": 5}
-                assert decoded == [public_id]
+                assert normalized == [milliseconds]
                 rejected = await client.call_tool(
-                    "public_reference",
+                    "duration",
                     {"value": {"value": 7} if nested else 7},
                 )
                 assert rejected.is_error

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.1
+
+- Keep field documentation and examples focused on PermutedBigIntField and the
+  ordinary model/repository/output contracts. Remove obsolete guides and links.
+
 ## 4.0.0
 
 - Add PostgreSQL PermutedBigIntField for any BIGINT column, with caller-selected
@@ -8,20 +13,8 @@
 - Own per-column NO CYCLE sequence lifecycle through native SQLAlchemy DDL hooks;
   document explicit Alembic sequence/default/ownership operations.
 - Preserve DB-assigned identities in IdentifiedEntity.to_row for loaded upserts.
-- Breaking: remove the separate PGPublicIDField/entity/repository/contract family
-  and PublicIDOutput. Existing identifiers/FKs require deliberate application
+- Existing database schema/identifier changes require an explicit application
   migration; see [4.0 notes](docs/releases/4.0.0.md).
-
-## 3.0.0
-
-- Add PostgreSQL-only stored public IDs through permuteseq, using the existing
-  primary key without collision retries, runtime keys or JSON configuration.
-- Add PostgreSQL public-ID entity/repository families and backend-independent
-  PublicIDOutput using native Pydantic aliasing.
-- Breaking: remove IDEncryption, its JSON loader, IDInput/IDOutput metadata,
-  BaseIDOutput, decode_path_id and HTTP encryption bindings. Existing public
-  mappings require an explicit application migration before adopting 3.0.
-  See [migration notes](docs/releases/3.0.0.md).
 
 ## 2.1.0
 
@@ -77,8 +70,8 @@
 ## 1.5.1
 
 - Preserve original wire arguments in the Function Tools MCP adapter. The
-  shared executor validates and transforms them once, including public ID
-  codecs, while retaining SDK schemas, application guards and request scopes.
+  shared executor validates and transforms them once while retaining SDK
+  schemas, application guards and request scopes.
 - Resolve postponed input annotations in the defining tool's module, including
   tools without injected dependencies.
 

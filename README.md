@@ -1588,8 +1588,7 @@ a login endpoint down.
 nonsequential number directly in any declared BIGINT column through the optional
 `permuteseq` extension. Choose `primary_key=True` or `unique=True` explicitly.
 Override `id` on the ordinary identified/persistence model to retain the existing
-ready PostgreSQL repositories, foreign keys and plain output schemas. No second
-public_id column, runtime ID codec or configuration file is needed.
+ready PostgreSQL repositories, foreign keys and plain output schemas.
 
 See [usage, ranges and migrations](docs/guide/permuted-fields.md) and the breaking
 [4.0 migration notes](docs/releases/4.0.0.md).

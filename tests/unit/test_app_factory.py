@@ -67,7 +67,7 @@ async def test_application_instances_own_settings_and_resource_lifetimes(
     assert resource_b.closed
 
 
-async def test_not_found_preserves_the_requested_public_identity(
+async def test_not_found_preserves_the_requested_identifier(
     app_settings: Settings,
 ) -> None:
     from fastapi import APIRouter
@@ -81,7 +81,7 @@ async def test_not_found_preserves_the_requested_public_identity(
         entity="User",
         identifier="id",
         identifier_value=1_234_567_890,
-        message="Missing public user 1234567890",
+        message="Missing user 1234567890",
         message_code=resources.NOT_FOUND_ERROR,
     )
 
