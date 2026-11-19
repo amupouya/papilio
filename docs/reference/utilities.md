@@ -34,41 +34,6 @@ def secure_compare(a: str, b: str) -> bool:
     ...
 ```
 
-## `papilio.tools.ids`
-
-### `IDEncryption`
-
-```python
-class IDEncryption:
-    def __init__(self, mod: int, coff: int, offset: int=0) -> None:
-        ...
-
-    @property
-    def capacity(self) -> int:
-        ...
-
-    @property
-    def offset(self) -> int:
-        ...
-
-    @property
-    def bounds(self) -> tuple[int, int]:
-        ...
-
-    def encode(self, id: int) -> int:
-        ...
-
-    def decode(self, public_id: int) -> int:
-        ...
-
-    def try_decode(self, public_id: int) -> int | None:
-        ...
-
-    @staticmethod
-    def is_valid_coff(mod: int, coff: int) -> bool:
-        ...
-```
-
 ## `papilio.security.passwords`
 
 ```python
@@ -579,31 +544,6 @@ def format_jalali_datetime(dt: datetime, tz: str | tzinfo, fmt: str=DEFAULT_DATE
 def format_jalali_date(dt: datetime, tz: str | tzinfo, fmt: str=DEFAULT_DATE_FORMAT) -> str:
     ...
 ```
-
-## Configured public-ID fields
-
-```python
-from papilio.core.encryption import (
-    IDEncryptionConfig,
-    IDEncryptionSettings,
-    get_id_encryption_settings,
-)
-from papilio.types.ids import IDInput, IDOutput
-
-def get_id_encryption_settings(path: Path | None = None) -> IDEncryptionSettings:
-    ...
-
-def IDInput(resource: str) -> AfterValidator:
-    ...
-
-def IDOutput(resource: str) -> PlainSerializer:
-    ...
-```
-
-Use the metadata in `Annotated` fields. The settings object's `resources`
-mapping resolves configured keys to native codecs; its `entities` mapping is
-passed explicitly to `create_app(..., id_encryptions=...)` for native 404 ID
-encoding. [Configuration and boundary behavior](../guide/security.md).
 
 ## `papilio.utils.strings`
 

@@ -1124,9 +1124,7 @@ async def test_sdk_validation_feedback_is_actionable_bounded_and_private(
 
 
 @pytest.mark.parametrize("nested", [False, True], ids=["scalar", "model"])
-async def test_mcp_decodes_public_identifiers_once_through_http(
-    native, nested
-):
+async def test_mcp_transforms_scalar_inputs_once_through_http(native, nested):
     from typing import Annotated
 
     import httpx2
@@ -1135,17 +1133,15 @@ async def test_mcp_decodes_public_identifiers_once_through_http(
     from pydantic import AfterValidator, create_model
 
     from papilio.function_tools.mcp import build_server
-    from papilio.tools.ids import IDEncryption
 
     container, _, _ = native
-    codec = IDEncryption(
-        mod=99_999_989, coff=43_109_723, offset=23_200_000_000
-    )
     decoded: list[int] = []
 
     def decode(value: int) -> int:
         decoded.append(value)
-        return codec.decode(value)
+        if value < 1000:
+            raise ValueError("Value must be at least 1000")
+        return value - 1000
 
     identifier = Annotated[int, AfterValidator(decode)]
     model = create_model("PublicReference", value=(identifier, ...))
@@ -1172,7 +1168,7 @@ async def test_mcp_decodes_public_identifiers_once_through_http(
         name="References",
     )
     app = server.streamable_http_app(stateless_http=True, json_response=True)
-    public_id = codec.encode(7)
+    public_id = 1007
     async with app.router.lifespan_context(app):
         async with httpx2.AsyncClient(
             transport=httpx2.ASGITransport(app=app)

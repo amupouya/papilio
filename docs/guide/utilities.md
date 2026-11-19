@@ -33,45 +33,11 @@ assert decrypt(encrypted, key) == "private payload"
 
 These helpers use authenticated encryption and raise `ValueError` for an invalid encrypted payload. Pass an application-managed secret; the example value is not a deployment key. `hash_sha256` supplies a deterministic digest and `secure_compare` supplies string comparison for secrets. Passwords have a separate [PasswordHasher](security.md) API.
 
-## Encoded identifiers
+## Public identifiers
 
-```python
-from papilio.tools.ids import IDEncryption
-
-ids = IDEncryption(mod=1_000_003, coff=37, offset=10_000)
-public_id = ids.encode(42)
-assert ids.decode(public_id) == 42
-```
-
-This is a reversible integer mapping, not cryptographic protection or authorization. `mod` bounds the input capacity and must be coprime with `coff`. Exceeding capacity raises an error. Keep the parameters stable if existing public identifiers must remain valid.
-
-To encode an output ID and decode a path parameter:
-
-```python
-from typing import Annotated, ClassVar
-from fastapi import APIRouter, Depends
-from papilio.api.dependencies.ids import decode_path_id
-from papilio.schemas.outputs import BaseIDOutput
-from papilio.tools.ids import IDEncryption
-
-product_ids = IDEncryption(mod=1_000_003, coff=37)
-
-
-class ProductOut(BaseIDOutput):
-    __encryption__: ClassVar[IDEncryption] = product_ids
-    title: str
-
-
-DecodedProductID = Annotated[int, Depends(decode_path_id(product_ids, "product"))]
-router = APIRouter()
-
-
-@router.get("/products/{id}")
-async def product(id: DecodedProductID):
-    return {"internal_id": id}
-```
-
-The endpoint only demonstrates decoding; add your entity lookup and authorization before exposing real data.
+See [PostgreSQL public IDs](public-ids.md) for database-generated numeric public
+identities and the database-independent PublicIDOutput schema. Input values are
+ordinary positive integers; queries use the stored public_id directly.
 
 ## Common result and enum types
 

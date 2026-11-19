@@ -22,6 +22,10 @@ from papilio.infra.db.schema.entity import (
     PersistenceEntity,
     TimestampEntity,
 )
+from papilio.infra.db.schema.postgresql import (
+    PGPublicIdentifiedEntity,
+    PGPublicPersistenceEntity,
+)
 from papilio.infra.db.uow import PGUnitOfWork
 from papilio.schemas.results import PagedType
 
@@ -181,4 +185,39 @@ class PGPersistenceRepositoryContract[T: PersistenceEntity](
     PGIdentifiedRepositoryContract[T],
     PGTimestampRepositoryContract[T],
     PersistenceRepositoryContract[T],
+): ...
+
+
+class PGPublicIdentifiedRepositoryContract[T: PGPublicIdentifiedEntity](
+    PGIdentifiedRepositoryContract[T]
+):
+    @abstractmethod
+    async def get_by_public_id(self, public_id: int) -> T | None: ...
+
+    @abstractmethod
+    async def get_by_public_ids(
+        self, public_ids: Sequence[int]
+    ) -> Sequence[T]: ...
+
+    @abstractmethod
+    async def update_by_public_id(
+        self, public_id: int, changes: Mapping[str, Any]
+    ) -> T | None: ...
+
+    @abstractmethod
+    async def update_by_public_ids(
+        self, public_ids: Sequence[int], changes: Mapping[str, Any]
+    ) -> Sequence[T]: ...
+
+    @abstractmethod
+    async def remove_by_public_id(self, public_id: int) -> T | None: ...
+
+    @abstractmethod
+    async def remove_by_public_ids(
+        self, public_ids: Sequence[int]
+    ) -> Sequence[T]: ...
+
+
+class PGPublicPersistenceRepositoryContract[T: PGPublicPersistenceEntity](
+    PGPublicIdentifiedRepositoryContract[T], PGPersistenceRepositoryContract[T]
 ): ...

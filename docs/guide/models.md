@@ -63,6 +63,11 @@ explicit [migration](../releases/2.0.0.md).
 
 ## Backend-specific fields
 
+Stored numeric public IDs are an optional PostgreSQL capability, using
+PGPublicIDField and PGPublicIdentifiedEntity/PGPublicPersistenceEntity from
+papilio.infra.db.schema.postgresql. See [PostgreSQL public IDs](public-ids.md)
+for the required extension, ranges, repositories and output schemas.
+
 PostgreSQL `JSONBField` and `ArrayField` live in `papilio.infra.db.dialects.postgresql`. Dialect tools express database-specific types and options; they are not automatically portable to SQLite or MySQL. Consult the [dialect reference](../reference/sql-tools.md) for array element types, index options and defaults.
 
 ## Serialization and partial updates

@@ -10,7 +10,7 @@ and connects them when selected. `papilio.api.dependencies` and
 | Rate limiting | `tools.rate_limit` | Memory/Redis providers and HTTP adapters |
 | JWT authentication | `tools.auth.JWTAuth` | `api.dependencies.auth.bearer` |
 | Input/existence checks | `tools.checks.Checks`, `IDChecks` | Application services choose inheritance/composition |
-| Public ID mapping | `tools.ids.IDEncryption` | `api.dependencies.ids.decode_path_id` |
+| Stored public IDs (PostgreSQL) | `infra.db.schema.postgresql` | `schemas.outputs.PublicIDOutput` |
 | Password hashing | `security.passwords.PasswordHasher` | `providers.passwords.PasswordProvider` |
 
 The framework does not require an identity model, JWT authentication, encoded
@@ -101,9 +101,9 @@ is an optional ready implementation, returning `Principal(subject, scopes)` and
 requiring an access token. `require_access(principal_dependency, scope)` is an
 optional scope policy. See [security](security.md) for wiring.
 
-`decode_path_id` is an explicitly selected HTTP dependency. Plain `id: int` paths
-continue to work. `IDEncryption` is reversible obfuscation, not encryption or
-permission checking. Neither tool is activated by importing or creating an app.
+Numeric public identities belong to the optional
+[PostgreSQL public-ID capability](public-ids.md). PublicIDOutput only renames a
+stored public value; no decoder or automatic application-wide conversion runs.
 
 ## Checks, not a required service base
 
@@ -121,8 +121,8 @@ inherit from these helpers.
   move to `papilio.providers.*`.
 - `BaseService`/`BaseIDService` → `Checks`/`IDChecks` in `papilio.tools.checks`;
   explicitly declare the entity label.
-- `papilio.security.ids` → `papilio.tools.ids`.
-- `api.requests.parameters` → `api.dependencies.ids`.
+- Runtime ID codecs and path decoders were removed in 3.0; see the explicit
+  [public-ID migration](../releases/3.0.0.md).
 - The fixed `CurrentPrincipal`/`get_current_principal` dependency was replaced by
   explicit `bearer(authenticate)`. JWT decoding no longer reads global settings.
 - Rate rules/configuration live in `tools.rate_limit.config`; limiter policy and

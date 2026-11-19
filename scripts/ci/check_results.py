@@ -73,6 +73,17 @@ def check(path: str) -> None:
         "tests.integration.test_scaffold_runtime::test_generated_sql_routes_and_query_tools[True]",
     }
     required.update(
+        "tests.integration.test_pg_public_ids::" + name
+        for name in (
+            "test_single_and_bulk_generation_return_stored_values",
+            "test_concurrent_committed_inserts_never_repeat",
+            "test_public_operations_preserve_internal_operations",
+            "test_loaded_rows_and_bulk_updates_leave_generation_to_db",
+            "test_http_foreign_reference_and_errors_use_stored_public_ids",
+            "test_generated_id_is_immutable_and_capacity_fails_without_reuse",
+        )
+    )
+    required.update(
         "tests.integration.test_cli_runtime::"
         f"test_runner_serves_reloads_and_shuts_down[{mode}-{backend}]"
         for mode in ("dev", "prod")

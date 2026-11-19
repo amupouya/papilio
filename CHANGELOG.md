@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0
+
+- Add PostgreSQL-only stored public IDs through permuteseq, using the existing
+  primary key without collision retries, runtime keys or JSON configuration.
+- Add PostgreSQL public-ID entity/repository families and backend-independent
+  PublicIDOutput using native Pydantic aliasing.
+- Breaking: remove IDEncryption, its JSON loader, IDInput/IDOutput metadata,
+  BaseIDOutput, decode_path_id and HTTP encryption bindings. Existing public
+  mappings require an explicit application migration before adopting 3.0.
+  See [migration notes](docs/releases/3.0.0.md).
+
 ## 2.1.0
 
 - Add `app.tables_path` and the keyword-only `Bootstrapper.tables_path`

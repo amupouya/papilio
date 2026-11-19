@@ -1,5 +1,10 @@
 # Repository contracts
 
+PostgreSQL also exposes PGPublicIdentifiedRepositoryContract and
+PGPublicPersistenceRepositoryContract for its optional stored public-ID models.
+They retain internal-ID/timestamp obligations and add the six public-ID methods
+shown in the [PostgreSQL reference](postgresql.md#stored-public-ids-postgresql-only).
+
 Generated from this checkout. Code blocks show signatures; `...` replaces implementation bodies. These are reference declarations, not standalone executable modules.
 
 Single-underscore methods are protected extension tools. For inherited methods, follow the base class reference. Localized string values use Unicode escapes.

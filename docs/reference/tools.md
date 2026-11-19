@@ -74,46 +74,6 @@ class IDChecks[TIDModel: HasID](Checks[TIDModel]):
         ...
 ```
 
-## `papilio.tools.ids`
-
-### `IDEncryption`
-
-```python
-class IDEncryption:
-    __slots__ = ('_mod', '_coff', '_coff_inv', '_offset')
-
-    def __init__(self, mod: int, coff: int, offset: int=0) -> None:
-        ...
-
-    @property
-    def capacity(self) -> int:
-        ...
-
-    @property
-    def offset(self) -> int:
-        ...
-
-    @property
-    def bounds(self) -> tuple[int, int]:
-        ...
-
-    def encode(self, id: int) -> int:
-        ...
-
-    def decode(self, public_id: int) -> int:
-        ...
-
-    def try_decode(self, public_id: int) -> int | None:
-        ...
-
-    @staticmethod
-    def is_valid_coff(mod: int, coff: int) -> bool:
-        ...
-
-    def __repr__(self) -> str:
-        ...
-```
-
 ## `papilio.tools.rate_limit.base`
 
 ### `State`

@@ -28,15 +28,6 @@ def require_access[T: Scoped](principal: Callable[..., Awaitable[T]], scope: str
     ...
 ```
 
-## `papilio.api.dependencies.ids`
-
-### `decode_path_id`
-
-```python
-def decode_path_id(encryption: IDEncryption, entity: str, param: str='id') -> Callable[..., int]:
-    ...
-```
-
 ## `papilio.api.dependencies.rate_limit`
 
 ### `by_ip`
@@ -188,7 +179,7 @@ def unexcepted_error_handler(request: Request, exc: Exception) -> JSONResponse:
 ### `setup_exception_handlers`
 
 ```python
-def setup_exception_handlers(app: FastAPI, *, id_encryptions: Mapping[str, IDEncryption] | None = None) -> None:
+def setup_exception_handlers(app: FastAPI) -> None:
     ...
 ```
 

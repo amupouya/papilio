@@ -1,11 +1,10 @@
 """The shapes that leave — what a client actually receives."""
 
 from collections.abc import Mapping, Sequence
-from typing import Any, ClassVar, Self
+from typing import Any, Self
 
-from pydantic import BaseModel, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, Field
 
-from papilio.tools.ids import IDEncryption
 from papilio.types.enums import FaStrEnum
 
 
@@ -29,29 +28,10 @@ class BaseOutput(BaseModel):
         return [cls.model_validate(item) for item in data]
 
 
-class BaseIDOutput(BaseOutput):
-    """An output whose `id` is encoded on its way out.
+class PublicIDOutput(BaseOutput):
+    """Expose stored public_id as id through native Pydantic aliasing."""
 
-    Point `__encryption__` at an `IDEncryption` and the row id is serialised as
-    its public id — the schema is the single place that happens, so no handler
-    can forget it and no service has to know the URL representation exists.
-    Leave it `None` and the id goes out as-is.
-
-        class OrderOut(BaseIDOutput):
-            __encryption__ = IDEncryption(mod=10_000_019, coff=387_241)
-    """
-
-    __encryption__: ClassVar[IDEncryption | None] = None
-
-    id: int
-
-    @field_serializer("id")
-    def _encode_id(self, id: int) -> int:
-        encryption = type(self).__encryption__
-        result = id
-        if encryption is not None:
-            result = encryption.encode(id)
-        return result
+    id: int = Field(validation_alias="public_id")
 
 
 class EnumOut(BaseOutput):

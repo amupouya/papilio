@@ -42,6 +42,7 @@ nav:
       - Request-scoped functions: guide/request-scopes.md
       - Configuration: guide/configuration.md
       - SQL models and fields: guide/models.md
+      - PostgreSQL public IDs: guide/public-ids.md
       - Repositories and reporting: guide/repositories.md
       - Transactions and UnitOfWork: guide/transactions.md
       - API inputs, outputs and errors: guide/api.md
@@ -78,6 +79,7 @@ nav:
       - Security and utilities: reference/utilities.md
       - CLI and scaffolding: reference/scaffolding.md
   - Release notes:
+      - Papilio 3.0.0: releases/3.0.0.md
       - Papilio 2.0.0: releases/2.0.0.md
       - Papilio 1.6.1: releases/1.6.1.md
       - Papilio 1.6.0: releases/1.6.0.md

@@ -195,15 +195,15 @@ class BaseOutput(BaseModel):
         ...
 ```
 
-### `BaseIDOutput`
+### `PublicIDOutput`
 
 ```python
-class BaseIDOutput(BaseOutput):
-    id: int
-    @field_serializer('id')
-    def _encode_id(self, id: int) -> int:
-        ...
+class PublicIDOutput(BaseOutput):
+    id: int = Field(validation_alias="public_id")
 ```
+
+Reads the stored public_id, emits id, and does not fall back to internal IDs.
+See [PostgreSQL public IDs](../guide/public-ids.md).
 
 ### `EnumOut`
 

@@ -1582,82 +1582,20 @@ confuse and must not be, so they sit in two files rather than one:
 A malformed stored hash is a non-match, never an exception — a legacy row cannot take
 a login endpoint down.
 
-**`IDEncryption`** ([papilio/tools/ids.py](papilio/tools/ids.py))
-— exposes a serial primary key as a public id that doesn't announce your row count
-(`/orders/42` says how many orders exist; `/orders/43` is a valid guess). It is a
-modular multiplication, so it is reversible, stateless and needs no extra column:
+### Stored public IDs (PostgreSQL only)
 
-```python
-public = IDEncryption(mod=10_000_019, coff=387_241, offset=100_000)
-public.encode(42)          # -> the id you put in the URL
-public.try_decode(value)   # -> None for a malformed id, so the route can 404
-```
+PostgreSQL can generate and store numeric public IDs through the optional
+`permuteseq` extension. Use `PGPublicIdentifiedEntity` / `PGPublicIDField` from
+`papilio.infra.db.schema.postgresql` and `PGPublicIdentifiedRepository` from
+`papilio.infra.db.repositories.backends.postgresql`. The existing primary key
+feeds a stored generated column; there is no Python read-time conversion or
+collision-retry insertion loop. A range/decimal width is declared on the model,
+without runtime encryption configuration. `PublicIDOutput` exposes stored
+`public_id` as `id` through Pydantic aliasing, independently of the database.
 
-Obfuscation, not authorisation — keep checking access on every read. It raises rather
-than colliding once the table outgrows `mod`, so pick `mod` well above any row count
-you expect to reach.
-
-Both ends of the round trip are wired for you, so no handler has to remember either:
-
-```python
-ORDER_IDS = IDEncryption(mod=10_000_019, coff=387_241, offset=100_000)
-
-class OrderOut(BaseIDOutput):          # outbound: the serialiser encodes `id`
-    __encryption__ = ORDER_IDS
-
-OrderID = Annotated[int, Depends(decode_path_id(ORDER_IDS, "Order"))]
-
-@router.get("/{id}", response_model=APIResponse[OrderOut, None])
-async def get(id: OrderID, service: FromDishka[IOrderService]):   # inbound: a row id
-    ...
-```
-
-The route speaks public ids, the service speaks row ids, and a public id that does
-not decode answers **404** — a forged id must be indistinguishable from one that
-never existed, or the endpoint becomes an oracle for valid ids.
-
-For JSON-configured field IDs, use directional metadata on any field name:
-
-```python
-from typing import Annotated
-from papilio.core.encryption import get_id_encryption_settings
-from papilio.schemas.inputs import BaseDTO
-from papilio.schemas.outputs import BaseOutput
-from papilio.types.aliases import IdType
-from papilio.types.ids import IDInput, IDOutput
-
-class AssignmentInput(BaseDTO):
-    user_id: Annotated[IdType, IDInput("access/users")]
-
-class AssignmentOutput(BaseOutput):
-    user_id: Annotated[int, IDOutput("access/users")]
-
-app = create_app(
-    settings,
-    id_encryptions=get_id_encryption_settings().entities,
-)
-```
-
-The same `IDInput` metadata works for HTTP path/query parameters. Invalid IDs
-use normal Pydantic validation (422); legacy `decode_path_id` keeps its 404
-contract. `IDOutput` serializes internal IDs once, including foreign ID fields,
-list items and nullable references; trusted internal DTOs/models keep plain IDs.
-
-Keep all resource settings in one private `encryption.json`, or select an
-explicit file with `PAPILIO_ENCRYPTION`. For example:
-
-```json
-{"access/users": {"mod": 90000, "coff": 7, "offset": 10000, "entity": "User"}}
-```
-
-These are demonstration values. Preserve private coefficients once IDs have
-been issued. The loader caches validated read-only mappings and never falls
-back to a sample or generates replacement coefficients. `entity` is optional;
-when supplied, `.entities` binds that entity to native HTTP NotFound error
-encoding. Configured ID errors use a standard public message and public
-`identifier_value`; the original app exception remains unchanged. Other
-entities and non-ID errors retain their existing representation. Loading JSON
-does not opt any model field into encoding automatically.
+See [setup, ranges, foreign references and errors](docs/guide/public-ids.md).
+Existing public IDs require an explicit [3.0 migration](docs/releases/3.0.0.md);
+other database backends retain their ordinary ID behavior.
 
 ### Other utilities
 
